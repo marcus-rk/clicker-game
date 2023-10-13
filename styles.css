@@ -70,7 +70,7 @@ button {
 
 .fill {
     height: 100%;
-    width: 30%;
+    /* width: 30%; fill done in html/js */
     background-color: darkorange;
     border-right: 5px solid black;
     transition: width 0.5s;
