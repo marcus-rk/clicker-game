@@ -54,52 +54,12 @@ button.addEventListener("click", () => {
 
 //
 function levelUp() {
-    if (!isLevelPause) {
-        LEVEL++;
-        setDrainStepValue(drainStepValue * drainValueLevelUpMultiplier);
-        fillStep = fillStep * stepUpMultiplier;
 
-        if (LEVEL % 10 === 0) {
-            // Decrease the drain time to make it shorter on level up
-            setDrainStepTime(drainStepTime * drainTimeLevelUpMultiplier);
-        }
-
-        // Pause draining and update the elements
-        isLevelPause = true;
-        updateAllElements();
-        setTimeout(() => {
-            isLevelPause = false;
-            resetWidth();
-        }, levelDownPauseDuration);
-    }
 }
 
 //
 function levelDown() {
-    if (!isLevelPause) {
-        const isUnderOne = (LEVEL - 1 < 1);
-        if (!isUnderOne) {
-            LEVEL--;
-            fillStep = fillStep * stepDownMultiplier;
-        }
 
-        if (drainStepValue - LEVEL > 0) {
-            setDrainStepValue(drainStepValue * drainValueLevelDownMultiplier);
-        }
-
-        if (LEVEL % 10 === 0) {
-            // Increase the drain time to make it longer on level down
-            setDrainStepTime(drainStepTime * drainTimeLevelDownMultiplier);
-        }
-
-        // Pause draining and update the elements
-        isLevelPause = true;
-        updateAllElements();
-        setTimeout(() => {
-            isLevelPause = false;
-            resetWidth();
-        }, levelDownPauseDuration);
-    }
 }
 
 
@@ -135,24 +95,7 @@ function fillBar() {
 
 // function for draining bar
 function drainBar() {
-    if (isLevelPause) {
-        // Do nothing during the pause
-        return;
-    }
 
-    width -= drainStepValue;
-
-    if (width < 0) {
-        width = 0;
-        isLevelPause = true; // Pause draining
-        updateAllElements();
-        setTimeout(() => {
-            isLevelPause = false;
-            levelDown();
-        }, levelDownPauseDuration);
-    }
-
-    updateWidth();
 }
 
 function setDrainStepTime(newTime) {
