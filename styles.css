@@ -71,9 +71,9 @@ button {
 .fill {
     height: 100%;
     /* width: 30%; fill done in html/js */
-    background-color: darkorange;
+    background-color: red;
     border-right: 5px solid black;
-    transition: width 0.15s;
+    transition: width 0.3s, background-color 0.3s;
 }
 
 span {

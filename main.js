@@ -23,7 +23,7 @@ let drainStepTime = 1; // default 1 sec
 let drainInterval = setInterval(drainBar, drainStepTime * 1000);
 const levelDownBuff = 5;
 let isLevel = false;
-const levelCooldown = 1000;
+const levelCooldown = 500;
 
 // current level
 let LEVEL = 1;
@@ -56,10 +56,10 @@ button.addEventListener("click", () => {
  * Handles the cooldown period after leveling up or down.
  */
 function levelCoolDown() {
-    resetWidth();
     updateAllElements();
     setTimeout(() => {
         isLevel = false;
+        resetWidth();
     }, levelCooldown);
 }
 
@@ -161,6 +161,8 @@ function setDrainStepValue(newValue) {
 function updateWidth() {
     barFill.style.width = `${width}%`;
 
+    updateProgressBarColor();
+
     if (width > 100)
         width = 100;
 
@@ -168,6 +170,12 @@ function updateWidth() {
         width = 0;
 
     percentageElement.innerText = `${Math.round(width)}%`;
+}
+
+function updateProgressBarColor() {
+    const red = Math.round(255 - (width / 200) * 255);
+    const green = Math.round((width / 100) * 255);
+    barFill.style.backgroundColor = `rgb(${red},${green},0)`;
 }
 
 /**
@@ -190,7 +198,7 @@ function resetWidth() {
 function updateElementValue(element, number) {
     const string = element.innerText;
     const stringSplit = string.split(":");
-    element.innerText = `${stringSplit[0]}: ${Math.round(number)}`;
+    element.innerText = `${stringSplit[0]}: ${number.toFixed(2)}`;
 }
 
 /**
