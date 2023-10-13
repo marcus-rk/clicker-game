@@ -73,5 +73,10 @@ button {
     /* width: 30%; fill done in html/js */
     background-color: darkorange;
     border-right: 5px solid black;
-    transition: width 0.5s;
+    transition: width 0.15s;
+}
+
+span {
+    font-size: 2rem;
+    font-weight: bold;
 }

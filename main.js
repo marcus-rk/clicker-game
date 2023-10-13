@@ -7,20 +7,41 @@ const levelElement = document.querySelector('.level');
 const fillStepElement = document.querySelector('.fill-step');
 const drainValueElement = document.querySelector('.drain-value');
 const drainIntervalElement = document.querySelector('.drain-interval');
+const percentageElement = document.querySelector('span');
 
 // current width for fill in progressbar
 let width = 0;
 
 // current fill step for progressbar (1 = 1% and 25 = 25% etc.)
-let fillStep = 101; // default 5
+let fillStep = 5; // default 5
 
 // current drain value and time-interval
-let drainStepValue = 1; // default 1
+let drainStepValue = 2; // default 2
 let drainStepTime = 1; // default 1 sec
-let drainInterval = setInterval(drainBar, drainStepTime * 1000); // start on load
+
+
+let drainInterval = setInterval(drainBar, drainStepTime * 1000);
+let isLevelPause = false;
+const levelDownPauseDuration = 1000; // ms
+const levelDownBuff = 5;
+
 
 // current level
-let LEVEL = 1;
+let LEVEL = 9;
+
+// Multipliers
+    // step up and down
+let stepUpMultiplier = 1.1; // Value to multiply when leveling up
+let stepDownMultiplier = 0.9; // Value to divide when leveling down
+
+    // drain value up and down
+let drainValueLevelUpMultiplier = 1.2;
+let drainValueLevelDownMultiplier = 0.8;
+
+    // drain time up and down
+let drainTimeLevelUpMultiplier = 0.95;
+let drainTimeLevelDownMultiplier = 1.05;
+
 
 /* ------------------------------------------------------------------ */
 
@@ -33,33 +54,67 @@ button.addEventListener("click", () => {
 
 //
 function levelUp() {
-    LEVEL++;
-    drainStepValue = drainStepValue + LEVEL;
+    if (!isLevelPause) {
+        LEVEL++;
+        setDrainStepValue(drainStepValue * drainValueLevelUpMultiplier);
+        fillStep = fillStep * stepUpMultiplier;
 
-    if (LEVEL % 10 === 0 && LEVEL !== 0) {
-        drainStepTime = drainStepTime * 0.90;
-        updateDrainInterval();
+        if (LEVEL % 10 === 0) {
+            // Decrease the drain time to make it shorter on level up
+            setDrainStepTime(drainStepTime * drainTimeLevelUpMultiplier);
+        }
+
+        // Pause draining and update the elements
+        isLevelPause = true;
+        updateAllElements();
+        setTimeout(() => {
+            isLevelPause = false;
+            resetWidth();
+        }, levelDownPauseDuration);
     }
-
-    updateElementValue(drainIntervalElement, drainStepTime);
-    updateElementValue(drainValueElement, drainStepValue);
-    updateElementValue(levelElement, LEVEL);
-    updateElementValue(fillStepElement, fillStep);
-
-    resetWidth();
 }
 
 //
 function levelDown() {
-    const isUnderZero = LEVEL-1 < 0
-    if (!isUnderZero)
-        LEVEL--;
+    if (!isLevelPause) {
+        const isUnderOne = (LEVEL - 1 < 1);
+        if (!isUnderOne) {
+            LEVEL--;
+            fillStep = fillStep * stepDownMultiplier;
+        }
+
+        if (drainStepValue - LEVEL > 0) {
+            setDrainStepValue(drainStepValue * drainValueLevelDownMultiplier);
+        }
+
+        if (LEVEL % 10 === 0) {
+            // Increase the drain time to make it longer on level down
+            setDrainStepTime(drainStepTime * drainTimeLevelDownMultiplier);
+        }
+
+        // Pause draining and update the elements
+        isLevelPause = true;
+        updateAllElements();
+        setTimeout(() => {
+            isLevelPause = false;
+            resetWidth();
+        }, levelDownPauseDuration);
+    }
 }
+
 
 function updateElementValue(element, number) {
     const string = element.innerText;
     const stringSplit = string.split(":");
-    element.innerText = stringSplit[0] + ": " + number;
+    element.innerText = stringSplit[0] + ": " + Math.round(number);
+}
+
+function updateAllElements() {
+    updateElementValue(drainIntervalElement, drainStepTime);
+    updateElementValue(fillStepElement, fillStep);
+    updateElementValue(drainValueElement, drainStepValue);
+    updateElementValue(levelElement, LEVEL);
+    updateWidth();
 }
 
 // function to update drain interval
@@ -80,29 +135,56 @@ function fillBar() {
 
 // function for draining bar
 function drainBar() {
+    if (isLevelPause) {
+        // Do nothing during the pause
+        return;
+    }
+
     width -= drainStepValue;
 
-    if (width < 0)
+    if (width < 0) {
         width = 0;
+        isLevelPause = true; // Pause draining
+        updateAllElements();
+        setTimeout(() => {
+            isLevelPause = false;
+            levelDown();
+        }, levelDownPauseDuration);
+    }
 
     updateWidth();
 }
 
-function addDrainStepTime(timeSeconds) {
-    drainStepTime += (timeSeconds * 1000);
+function setDrainStepTime(newTime) {
+    drainStepTime = newTime;
+
+    if (drainStepTime < 0)
+        drainStepTime = 0;
+
     updateDrainInterval()
 }
 
-function removeDrainStepTime(timeSeconds) {
-    drainStepTime -= (timeSeconds * 1000);
-    updateDrainInterval()
+function setDrainStepValue(newValue) {
+    drainStepValue = newValue;
+
+    if (drainStepValue < 1)
+        drainStepValue = 1;
 }
 
 function updateWidth() {
     barFill.style.width = `${width}%`;
+
+    if (width > 100)
+        width = 100;
+
+    percentageElement.innerText = `${Math.round(width)}%`;
 }
 
 function resetWidth() {
     width = 0;
+
+    if (LEVEL > 1)
+        width = levelDownBuff; // head start on new level
+
     updateWidth();
 }
