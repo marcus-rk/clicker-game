@@ -30,16 +30,16 @@ let LEVEL = 1;
 
 // Multipliers - Value to multiply when leveling up
     // step up and down
-const stepUpMultiplier = 1.1;
-const stepDownMultiplier = 0.9;
+const stepUpMultiplier = 1.05;
+const stepDownMultiplier = 0.95;
 
     // drain value up and down
-const drainValueLevelUpMultiplier = 1.2;
-const drainValueLevelDownMultiplier = 0.8;
+const drainValueLevelUpMultiplier = 1.1;
+const drainValueLevelDownMultiplier = 0.9;
 
     // drain time up and down
-const drainTimeLevelUpMultiplier = 0.95;
-const drainTimeLevelDownMultiplier = 1.05;
+const drainTimeLevelUpMultiplier = 0.9;
+const drainTimeLevelDownMultiplier = 1.1;
 
 
 /* ------------------------------------------------------------------ */
@@ -72,17 +72,19 @@ function levelCoolDown() {
  * Handles leveling up.
  */
 function levelUp() {
-    isLevel = true;
-    LEVEL++;
+    if (!isLevel) {
+        isLevel = true;
+        LEVEL++;
 
-    fillStep = fillStep * stepUpMultiplier;
-    setDrainStepValue(drainStepValue * drainValueLevelUpMultiplier);
+        fillStep = fillStep * stepUpMultiplier;
+        setDrainStepValue(drainStepValue * drainValueLevelUpMultiplier);
 
-    if (LEVEL % 5 === 0) {
-        setDrainStepTime(drainStepTime * drainTimeLevelUpMultiplier);
+        if (LEVEL % 3 === 0) {
+            setDrainStepTime(drainStepTime * drainTimeLevelUpMultiplier);
+        }
+
+        levelCoolDown();
     }
-
-    levelCoolDown();
 }
 
 /**
@@ -96,7 +98,7 @@ function levelDown() {
         fillStep = fillStep * stepDownMultiplier;
         setDrainStepValue(drainStepValue * drainValueLevelDownMultiplier);
 
-        if (LEVEL % 5 === 0) {
+        if (LEVEL % 3 === 0) {
             setDrainStepTime(drainStepTime * drainTimeLevelDownMultiplier);
         }
 
