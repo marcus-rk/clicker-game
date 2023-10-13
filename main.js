@@ -7,7 +7,6 @@ const levelElement = document.querySelector('.level');
 const fillStepElement = document.querySelector('.fill-step');
 const drainValueElement = document.querySelector('.drain-value');
 const drainIntervalElement = document.querySelector('.drain-interval');
-const percentageElement = document.querySelector('span');
 
 // current width for fill in progressbar
 let width = 0;
@@ -166,17 +165,14 @@ function setDrainStepValue(newValue) {
  * Updates the width of the progress bar and ensures it stays within bounds.
  */
 function updateWidth() {
-    barFill.style.width = `${width}%`;
-
-    updateProgressBarColor();
-
     if (width > 100)
         width = 100;
 
     if (width < 0)
         width = 0;
 
-    percentageElement.innerText = `${Math.round(width)}%`;
+    barFill.style.width = `${width}%`;
+    updateProgressBarColor();
 }
 
 function updateProgressBarColor() {
