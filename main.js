@@ -47,7 +47,12 @@ const drainTimeLevelDownMultiplier = 1.05;
 // add click event listener to button.
 button.addEventListener("click", () => {
     fillBar();
-    console.log(drainStepTime);
+});
+
+document.addEventListener('keypress', (event) => {
+    if (event.key === ' '){
+        button.click();
+    }
 });
 
 /* ------------------------------------------------------------------ */
