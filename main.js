@@ -21,26 +21,25 @@ let drainStepTime = 1; // default 1 sec
 
 
 let drainInterval = setInterval(drainBar, drainStepTime * 1000);
-let isLevelPause = false;
-const levelDownPauseDuration = 1000; // ms
 const levelDownBuff = 5;
-
+let isLevel = false;
+const levelCooldown = 1000;
 
 // current level
-let LEVEL = 9;
+let LEVEL = 1;
 
-// Multipliers
+// Multipliers - Value to multiply when leveling up
     // step up and down
-let stepUpMultiplier = 1.1; // Value to multiply when leveling up
-let stepDownMultiplier = 0.9; // Value to divide when leveling down
+const stepUpMultiplier = 1.1;
+const stepDownMultiplier = 0.9;
 
     // drain value up and down
-let drainValueLevelUpMultiplier = 1.2;
-let drainValueLevelDownMultiplier = 0.8;
+const drainValueLevelUpMultiplier = 1.2;
+const drainValueLevelDownMultiplier = 0.8;
 
     // drain time up and down
-let drainTimeLevelUpMultiplier = 0.95;
-let drainTimeLevelDownMultiplier = 1.05;
+const drainTimeLevelUpMultiplier = 0.95;
+const drainTimeLevelDownMultiplier = 1.05;
 
 
 /* ------------------------------------------------------------------ */
@@ -48,42 +47,69 @@ let drainTimeLevelDownMultiplier = 1.05;
 // add click event listener to button.
 button.addEventListener("click", () => {
     fillBar();
+    console.log(drainStepTime);
 });
 
 /* ------------------------------------------------------------------ */
 
-//
+/**
+ * Handles the cooldown period after leveling up or down.
+ */
+function levelCoolDown() {
+    resetWidth();
+    updateAllElements();
+    setTimeout(() => {
+        isLevel = false;
+    }, levelCooldown);
+}
+
+/**
+ * Handles leveling up.
+ */
 function levelUp() {
+    isLevel = true;
+    LEVEL++;
 
+    fillStep = fillStep * stepUpMultiplier;
+    setDrainStepValue(drainStepValue * drainValueLevelUpMultiplier);
+
+    if (LEVEL % 5 === 0) {
+        setDrainStepTime(drainStepTime * drainTimeLevelUpMultiplier);
+    }
+
+    levelCoolDown();
 }
 
-//
+/**
+ * Handles leveling down if conditions are met.
+ */
 function levelDown() {
+    if (!isLevel && LEVEL > 1) {
+        isLevel = true;
+        LEVEL--;
 
+        fillStep = fillStep * stepDownMultiplier;
+        setDrainStepValue(drainStepValue * drainValueLevelDownMultiplier);
+
+        if (LEVEL % 5 === 0) {
+            setDrainStepTime(drainStepTime * drainTimeLevelDownMultiplier);
+        }
+
+        levelCoolDown();
+    }
 }
 
-
-function updateElementValue(element, number) {
-    const string = element.innerText;
-    const stringSplit = string.split(":");
-    element.innerText = stringSplit[0] + ": " + Math.round(number);
-}
-
-function updateAllElements() {
-    updateElementValue(drainIntervalElement, drainStepTime);
-    updateElementValue(fillStepElement, fillStep);
-    updateElementValue(drainValueElement, drainStepValue);
-    updateElementValue(levelElement, LEVEL);
-    updateWidth();
-}
-
-// function to update drain interval
+/**
+ * Updates the drain interval for the progress bar.
+ */
 function updateDrainInterval() {
     clearInterval(drainInterval);
-    drainInterval = setInterval(drainBar, drainStepTime);
+    drainInterval = setInterval(drainBar, drainStepTime * 1000);
 }
 
-// function for fill bar
+/**
+ * Fills the progress bar and triggers a level up if necessary.
+ */
 function fillBar() {
     width += fillStep;
 
@@ -93,11 +119,22 @@ function fillBar() {
     updateWidth();
 }
 
-// function for draining bar
+/**
+ * Drains the progress bar and triggers a level down if necessary.
+ */
 function drainBar() {
+    width -= drainStepValue;
 
+    if (width <= 0)
+        levelDown();
+
+    updateWidth();
 }
 
+/**
+ * Sets the drain step time and updates the drain interval.
+ * @param {number} newTime - The new drain step time in seconds.
+ */
 function setDrainStepTime(newTime) {
     drainStepTime = newTime;
 
@@ -107,6 +144,10 @@ function setDrainStepTime(newTime) {
     updateDrainInterval()
 }
 
+/**
+ * Sets the drain step value.
+ * @param {number} newValue - The new drain step value.
+ */
 function setDrainStepValue(newValue) {
     drainStepValue = newValue;
 
@@ -114,20 +155,51 @@ function setDrainStepValue(newValue) {
         drainStepValue = 1;
 }
 
+/**
+ * Updates the width of the progress bar and ensures it stays within bounds.
+ */
 function updateWidth() {
     barFill.style.width = `${width}%`;
 
     if (width > 100)
         width = 100;
 
+    if (width < 0)
+        width = 0;
+
     percentageElement.innerText = `${Math.round(width)}%`;
 }
 
+/**
+ * Resets the width of the progress bar, providing a head start on a new level if applicable.
+ */
 function resetWidth() {
     width = 0;
 
     if (LEVEL > 1)
         width = levelDownBuff; // head start on new level
 
+    updateWidth();
+}
+
+/**
+ * Updates the value of an HTML element.
+ * @param {HTMLDivElement} element - The HTML element to update.
+ * @param {number} number - The new number to display in the element.
+ */
+function updateElementValue(element, number) {
+    const string = element.innerText;
+    const stringSplit = string.split(":");
+    element.innerText = `${stringSplit[0]}: ${Math.round(number)}`;
+}
+
+/**
+ * Updates all HTML elements displaying values.
+ */
+function updateAllElements() {
+    updateElementValue(drainIntervalElement, drainStepTime);
+    updateElementValue(fillStepElement, fillStep);
+    updateElementValue(drainValueElement, drainStepValue);
+    updateElementValue(levelElement, LEVEL);
     updateWidth();
 }
